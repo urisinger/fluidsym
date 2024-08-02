@@ -6,33 +6,37 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define SCREEN_WIDTH (800)
-#define SCREEN_HEIGHT (450)
+#define SCREEN_WIDTH (1920)
+#define SCREEN_HEIGHT (1080)
 
 #define WINDOW_TITLE "Window title"
 
 int main(void) {
 
   srand(time(NULL));
-  SetConfigFlags(FLAG_WINDOW_RESIZABLE);
   InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, WINDOW_TITLE);
   SetTargetFPS(60);
 
-  Grid grid = grid_new_uniform(200,200, 0.0, 1.0, 200.0);
+  int height = 300;
+  float ratio = ((float)GetRenderWidth() / GetRenderHeight());
+
+  Fluid fluid = fluid_new(height, height / ratio, 1.1 ,100.0);
 
   clock_t begin, end;
   begin = clock();
 
   Vector2 ball_pos = {.x = 0.0, .y = 0.0};
-  float ball_r = 8.0;
+  float ball_r = 5.0;
 
   bool mouse_pressed = false;
   while (!WindowShouldClose()) {
+
+
     BeginDrawing();
 
     ClearBackground(RAYWHITE);
 
-    draw_grid(&grid);
+    draw_fluid(&fluid);
 
     EndDrawing();
 
@@ -44,8 +48,7 @@ int main(void) {
       Vector2 new_pos = {.x = mouse_pos.x / GetScreenWidth(),
                          .y = mouse_pos.y / GetScreenHeight()};
 
-      move_ball(&grid, ball_pos, new_pos, ball_r, dt);
-
+      move_ball(&fluid, ball_pos, new_pos, ball_r, dt);
 
       ball_pos = new_pos;
     }
@@ -55,7 +58,7 @@ int main(void) {
       Vector2 new_pos = {.x = mouse_pos.x / GetScreenWidth(),
                          .y = mouse_pos.y / GetScreenHeight()};
 
-      move_ball(&grid, new_pos, new_pos, ball_r, dt);
+      move_ball(&fluid, new_pos, new_pos, ball_r, dt);
 
       ball_pos = new_pos;
       mouse_pressed = true;
@@ -63,12 +66,13 @@ int main(void) {
       mouse_pressed = false;
     }
 
+    advance_grid(&fluid, dt);
 
-
-    advance_grid(&grid, dt);
 
     begin = end;
   }
+
+  fluid_free(&fluid);
 
   CloseWindow();
 
