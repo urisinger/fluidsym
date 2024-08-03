@@ -128,7 +128,7 @@ float avg_u(Fluid *f, int i, int j) {
          4;
 }
 
-float sample_grid(float *grid, int n, float x, float y) {
+float sample_grid(Fluid* f, float *grid, int n, float x, float y) {
   float dx = x - floorf(x);
   float dy = y - floorf(y);
 
@@ -142,10 +142,10 @@ float sample_grid(float *grid, int n, float x, float y) {
   y0 = max(min(y0, n - 1), 0);
   y1 = max(min(y1, n - 1), 0);
 
-  float v00 = grid[y0 * n + x0];
-  float v01 = grid[y1 * n + x0];
-  float v10 = grid[y0 * n + x1];
-  float v11 = grid[y1 * n + x1];
+  float v00 = grid[y0 * n + x0] * get_s(f,y0, x0);
+  float v01 = grid[y1 * n + x0] * get_s(f,y1, x0);
+  float v10 = grid[y0 * n + x1] * get_s(f,y0, x1);
+  float v11 = grid[y1 * n + x1] * get_s(f,y1, x1);
 
   float v =
       (1 - dx) * ((1 - dy) * v00 + dy * v01) + dx * ((1 - dy) * v10 + dy * v11);
@@ -164,14 +164,14 @@ void advent_velocity(Fluid *f, float dt) {
         float x = (float)j - avg_u(f, i, j) * dt / f->spacing;
         float y = (float)i - f->y_velo[i * f->size_x + j] * dt / f->spacing;
 
-        f->new_v[i * f->size_x + j] = sample_grid(f->y_velo, f->size_x, x, y);
+        f->new_v[i * f->size_x + j] = sample_grid(f, f->y_velo, f->size_x, x, y);
       }
 
       if (get_s(f, i, j) != 0.0 && get_s(f, i, j - 1) != 0.0) {
         float x = (float)j - f->x_velo[i * f->size_x + j] * dt / f->spacing;
         float y = (float)i - avg_v(f, i, j) * dt / f->spacing;
 
-        f->new_u[i * f->size_x + j] = sample_grid(f->x_velo, f->size_x, x, y);
+        f->new_u[i * f->size_x + j] = sample_grid(f, f->x_velo, f->size_x, x, y);
       }
     }
   }
@@ -195,16 +195,15 @@ void advent_smoke(Fluid *f, float dt) {
         float y = (float)i - dy * h * 0.5;
 
         f->smoke[i * (f->size_x - 1) + j] =
-            sample_grid(f->old_smoke, f->size_x - 1, x, y);
+            sample_grid(f, f->old_smoke, f->size_x - 1, x, y);
       }
     }
   }
 }
 
-#define NUM_ITERATIONS 50
+#define NUM_ITERATIONS 75
 
 void advance_grid(Fluid *f, float dt) {
-
   memset(f->pressure, 0.0, sizeof(float) * (f->size_x - 1) * (f->size_y - 1));
   for (int n = 0; n < NUM_ITERATIONS; n++) {
     make_incompressible(f, dt);

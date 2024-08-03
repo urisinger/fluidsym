@@ -9,18 +9,17 @@
 #define SCREEN_WIDTH (1920)
 #define SCREEN_HEIGHT (1080)
 
-#define WINDOW_TITLE "Window title"
+#define WINDOW_TITLE "Fluidsym"
 
 int main(void) {
 
   srand(time(NULL));
   InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, WINDOW_TITLE);
-  SetTargetFPS(60);
 
   int height = 300;
   float ratio = ((float)GetRenderWidth() / GetRenderHeight());
 
-  Fluid fluid = fluid_new(height, height / ratio, 1.1 ,100.0);
+  Fluid fluid = fluid_new(height, height / ratio, 1.9 ,100.0);
 
   clock_t begin, end;
   begin = clock();
@@ -43,15 +42,6 @@ int main(void) {
     end = clock();
 
     float dt = ((float)(end - begin)) / (CLOCKS_PER_SEC);
-    if (mouse_pressed) {
-      Vector2 mouse_pos = GetMousePosition();
-      Vector2 new_pos = {.x = mouse_pos.x / GetScreenWidth(),
-                         .y = mouse_pos.y / GetScreenHeight()};
-
-      move_ball(&fluid, ball_pos, new_pos, ball_r, dt);
-
-      ball_pos = new_pos;
-    }
 
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
       Vector2 mouse_pos = GetMousePosition();
@@ -63,7 +53,18 @@ int main(void) {
       ball_pos = new_pos;
       mouse_pressed = true;
     } else if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+      move_ball(&fluid, ball_pos, ball_pos, ball_r, dt);
       mouse_pressed = false;
+    } else if (mouse_pressed) {
+      Vector2 mouse_pos = GetMousePosition();
+      Vector2 new_pos = {.x = mouse_pos.x / GetScreenWidth(),
+                         .y = mouse_pos.y / GetScreenHeight()};
+
+      move_ball(&fluid, ball_pos, new_pos, ball_r, dt);
+
+      ball_pos = new_pos;
+    } else{
+      move_ball(&fluid, ball_pos, ball_pos, ball_r, dt);
     }
 
     advance_grid(&fluid, dt);
