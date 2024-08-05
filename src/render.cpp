@@ -1,4 +1,5 @@
-#include "render.h"
+#include "render.hpp"
+#include "raylib.h"
 
 void draw_ball(Vector2 pos, float r) {
   int screen_width = GetRenderWidth();
@@ -50,34 +51,11 @@ Color getSquareColor(float val, float min, float max) {
   return ColorFromNormalized(color);
 }
 
-void draw_fluid(const Fluid *grid) {
+void draw_fluid(const Fluid &f) {
   int screen_width = GetRenderWidth();
   int screen_height = GetRenderHeight();
-
-  float minP = grid->smoke[0];
-  float maxP = grid->smoke[0];
-
-  for (int i = 1; i < grid->size_y - 1; i++) {
-    for (int j = 1; j < grid->size_x - 1; j++) {
-    float val = grid->smoke[i * (grid->size_x - 1) + j];
-    if (val < minP) {
-      minP = val;
-    }
-    if (val > maxP) {
-      maxP = val;
-    }
-  }
-  }
-
-  Vector2 size = {.x = (float)screen_width / (grid->size_x - 2),
-                  .y = (float)screen_height / (grid->size_y - 2)};
-  for (int i = 0; i < grid->size_y - 1; i++) {
-    for (int j = 0; j < grid->size_x - 1; j++) {
-      int index = i * (grid->size_x - 1) + j;
-      Vector2 corner = {.x = size.x * j, .y = size.y * i};
-
-      DrawRectangleV(corner, size,
-                     getSquareColor(grid->smoke[index], minP, maxP));
-    }
+  
+  for (Particle p : f.particles){
+    DrawCircle(screen_width * p.x.x / (f.grid_x * f.h), screen_height * p.x.y / (f.grid_y * f.h), f.ball_size, BLUE);
   }
 }
