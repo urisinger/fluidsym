@@ -55,7 +55,17 @@ void draw_fluid(const Fluid &f) {
   int screen_width = GetRenderWidth();
   int screen_height = GetRenderHeight();
   
-  for (Particle p : f.particles){
-    DrawCircle(screen_width * p.x.x / (f.grid_x * f.h), screen_height * p.x.y / (f.grid_y * f.h), f.ball_size, BLUE);
+  float minD = std::numeric_limits<float>::max();
+  float maxD = std::numeric_limits<float>::min();
+
+  for (const Particle& p : f.particles) {
+      minD = std::min(minD, p.d);
+      maxD = std::max(maxD, p.d);
+  }
+
+  printf("%f %f \n", minD, maxD);
+
+  for (const Particle& p : f.particles) {
+      DrawCircle(screen_width * p.x.x / (f.grid_x * f.h), screen_height * p.x.y / (f.grid_y * f.h), f.ball_size, getSquareColor(p.d, minD, maxD));
   }
 }
