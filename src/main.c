@@ -1,6 +1,5 @@
 #include "raylib.h"
 #include "render.h"
-#include <bits/time.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
